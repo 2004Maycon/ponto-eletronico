@@ -1,11 +1,183 @@
-body {
-    font-family: Arial, sans-serif;
+/* Configurações Gerais e Reset */
+* {
     margin: 0;
     padding: 0;
-    background-color: #f0f0f0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
-h1 {
+
+body {
+    background-color: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container Principal (Centralizado) */
+.painel-ponto {
+    width: 100%;
+    max-width: 450px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+}
+
+/* Topo / Cabeçalho */
+.topo-sistema {
     text-align: center;
-    color: #333;
+    margin-bottom: 25px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* O quadradinho pequeno perto da logo que você mencionou antes */
+.ponto-indicador {
+    width: 10px;
+    height: 10px;
+    background-color: #2ecc71;
+    border-radius: 3px;
+}
+
+.logo-img {
+    height: 40px;
+    object-fit: contain;
+}
+
+.topo-sistema h1 {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.subtitulo {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+/* Card de Ação do Funcionário */
+.card-ponto {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.status-dia {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #cbd5e1;
+}
+
+.data-atual {
+    color: #64748b;
+}
+
+.badge-status {
+    background-color: #e2e8f0;
+    color: #475569;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+/* Blocos de Registro (Formulários) */
+.bloco-registro {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Remove a margem do último bloco para não quebrar o espaçamento */
+.bloco-registro:last-of-type {
+    margin-bottom: 0;
+}
+
+.bloco-registro h3 {
+    font-size: 1.1rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Pequenas bolinhas sinalizadoras do lado do título interno */
+.marcador {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.marcador.entrada { background-color: #3498db; }
+.marcador.saida { background-color: #e67e22; }
+
+.grupo-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.grupo-input label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.grupo-input input[type="time"] {
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    color: #334155;
+    background-color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.grupo-input input[type="time"]:focus {
+    border-color: #3498db;
+}
+
+/* Botões */
+.btn-ponto {
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-entrada { background-color: #3498db; }
+.btn-entrada:hover { background-color: #2980b9; }
+
+.btn-saida { background-color: #e67e22; }
+.btn-saida:hover { background-color: #d35400; }
+
+/* Rodapé */
+.rodape {
+    text-align: center;
     margin-top: 20px;
+}
+
+.rodape p {
+    font-size: 0.8rem;
+    color: #94a3b8;
 }
