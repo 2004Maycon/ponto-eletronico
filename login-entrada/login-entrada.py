@@ -11,12 +11,11 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 def main(page: ft.Page):
     page.title = "Bebi Sistema - Ponto Eletrônico"
     page.padding = 20
-    # 🔄 MÁGICA DO DESIGN: Centraliza tudo perfeitamente na horizontal e na vertical
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
-    page.theme_mode = ft.ThemeMode.LIGHT # Força o tema claro para destacar o cartão
+    page.theme_mode = ft.ThemeMode.LIGHT 
     
-    # Armazenar o usuário que logou
+    # Armazenar os dados do usuário logado de forma simples e segura
     usuario_logado = []
 
     # Caminho das imagens na pasta assets
@@ -36,7 +35,7 @@ def main(page: ft.Page):
         )
 
     # -------------------------------------------------------------------------
-    # 🔓 TELA DE LOGIN (CENTRALIZADA EM UM CARD)
+    # 🔓 TELA DE LOGIN
     # -------------------------------------------------------------------------
     def ir_para_login(e=None):
         page.clean()
@@ -52,19 +51,15 @@ def main(page: ft.Page):
                 return
             
             try:
-                # Consulta o banco de dados buscando pelo E-mail
                 resposta = supabase.table("cadastro de usuário").select("*").eq("E-mail", txt_email.value).execute()
                 
-                # 1º Passo: Verifica se a lista veio vazia (E-mail não encontrado)
                 if not resposta.data or len(resposta.data) == 0:
                     lbl_erro.value = "E-mail não cadastrado!"
                     page.update()
                     return
                 
-                # 2º Passo: Se achou, pega com segurança o primeiro usuário da lista
                 user = resposta.data[0]
                 
-                # 3º Passo: Valida se a senha bate com a do banco
                 if user["senha"] == txt_senha.value:
                     usuario_logado.clear()
                     usuario_logado.append(user)
@@ -73,9 +68,6 @@ def main(page: ft.Page):
                         ir_para_admin()
                     else:
                         ir_para_ponto()
-                        
-                    # 🔄 FORÇA O FLET A MOSTRAR A NOVA TELA ATUALIZADA
-                    page.update()
                 else:
                     lbl_erro.value = "Senha incorreta!"
                     page.update()
@@ -84,7 +76,6 @@ def main(page: ft.Page):
                 lbl_erro.value = f"Erro de conexão: {ex}"
                 page.update()
 
-        # Criamos um container elegante em formato de Cartão no centro da tela
         conteudo_login = ft.Card(
             content=ft.Container(
                 content=ft.Column(
@@ -111,7 +102,7 @@ def main(page: ft.Page):
         page.update()
 
     # -------------------------------------------------------------------------
-    # 📝 TELA DE CADASTRO (CENTRALIZADA EM UM CARD)
+    # 📝 TELA DE CADASTRO
     # -------------------------------------------------------------------------
     def ir_para_cadastro(e):
         page.clean()
@@ -176,13 +167,13 @@ def main(page: ft.Page):
         page.update()
 
     # -------------------------------------------------------------------------
-    # ⏱️ TELA DE PONTO - FUNCIONÁRIO (CENTRALIZADA EM UM CARD)
+    # ⏱️ TELA DE PONTO - FUNCIONÁRIO (CONSTRUÍDA)
     # -------------------------------------------------------------------------
     def ir_para_ponto():
         page.clean()
         user = usuario_logado[0]
         
-        lbl_relogio = ft.Text(value="", size=38, weight="bold", color="blue", text_align=ft.TextAlign.CENTER)
+        lbl_relogio = ft.Text(value="", size=32, weight="bold", color="blue", text_align=ft.TextAlign.CENTER)
         lbl_status = ft.Text(value="", weight="bold", size=14)
 
         def atualizar_hora():
@@ -211,16 +202,18 @@ def main(page: ft.Page):
                 lbl_status.color = "green"
                 page.update()
             except Exception as ex:
-                lbl_status.value = f"Erro: {ex}"
+                lbl_status.value = f"Tabela de pontos pendente ou erro: {ex}"
                 lbl_status.color = "red"
                 page.update()
 
         def bater_saida(e):
             try:
                 hora = datetime.now().strftime("%H:%M:%S")
+                # Busca se tem ponto em aberto
                 checagem = supabase.table("registro de ponto").select("*").eq("funcionario_id", user["id"]).is_("horario_saida", "null").execute()
-                if len(checagem.data) == 0:
-                    lbl_status.value = "Erro: Nenhuma entrada aberta hoje!"
+                
+                if not checagem.data or len(checagem.data) == 0:
+                    lbl_status.value = "Erro: Nenhuma entrada aberta encontrada!"
                     lbl_status.color = "red"
                     page.update()
                     return
@@ -230,7 +223,7 @@ def main(page: ft.Page):
                 lbl_status.color = "green"
                 page.update()
             except Exception as ex:
-                lbl_status.value = f"Erro: {ex}"
+                lbl_status.value = f"Erro ao bater saída: {ex}"
                 lbl_status.color = "red"
                 page.update()
 
@@ -239,22 +232,23 @@ def main(page: ft.Page):
                 content=ft.Column(
                     controls=[
                         criar_cabecalho_logos(),
-                        ft.Text(f"Olá, {user['nome_funcionario']}", size=24, weight="bold", color="blue-grey"),
-                        ft.Text("Status: Funcionário Ativo", color="green", weight="bold"),
-                        ft.Container(height=10),
+                        ft.Text(f"Olá, {user['nome_funcionario']}", size=22, weight="bold", color="blue-grey"),
+                        ft.Text("Painel do Colaborador", color="grey-700", size=16),
+                        ft.Divider(),
                         lbl_relogio,
                         ft.Container(height=10),
                         ft.ElevatedButton("BATER ENTRADA", on_click=bater_entrada, bgcolor="green", color="white", width=340, height=55),
                         ft.Container(height=5),
                         ft.ElevatedButton("BATER SAÍDA", on_click=bater_saida, bgcolor="red", color="white", width=340, height=55),
+                        ft.Container(height=5),
                         lbl_status,
-                        ft.Container(height=10),
+                        ft.Divider(),
                         ft.TextButton("Sair / Desconectar", on_click=ir_para_login)
                     ],
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=12
                 ),
-                padding=30,
+                padding=25,
                 width=400,
             ),
             elevation=4
@@ -264,37 +258,69 @@ def main(page: ft.Page):
         atualizar_hora()
 
     # -------------------------------------------------------------------------
-    # 👑 TELA ADMIN (CENTRALIZADA)
+    # 👑 TELA ADMIN (CONSTRUÍDA)
     # -------------------------------------------------------------------------
     def ir_para_admin():
         page.clean()
+        user = usuario_logado[0]
         
         lista_pontos = ft.ListView(expand=1, spacing=10, padding=10)
+        lbl_status_banco = ft.Text(value="", size=12, color="blue-grey")
         
         try:
+            # Faz a busca segura dos pontos cadastrados
             pontos = supabase.table("registro de ponto").select("*").execute()
-            for p in pontos.data:
+            
+            if pontos.data and len(pontos.data) > 0:
+                for p in pontos.data:
+                    lista_pontos.controls.append(
+                        ft.Container(
+                            content=ft.Text(
+                                f"Func ID: {p['funcionario_id']} | 🛠️ Ent: {p['horario_entrada']} | 🚪 Sai: {p['horario_saida']}",
+                                size=13, color="black"
+                            ),
+                            bgcolor="grey-100", padding=10, border_radius=8
+                        )
+                    )
+                lbl_status_banco.value = f"{len(pontos.data)} registros carregados."
+            else:
                 lista_pontos.controls.append(
-                    ft.Text(f"Func ID: {p['funcionario_id']} | Entrada: {p['horario_entrada']} | Saída: {p['horario_saida']}", size=13)
+                    ft.Text("Nenhum registro de ponto encontrado no banco.", color="orange", style=ft.TextStyle(italic=True))
                 )
         except Exception as ex:
-            lista_pontos.controls.append(ft.Text(f"Erro ao carregar banco: {ex}"))
+            # Não deixa a tela travar em branco se a tabela não existir!
+            lista_pontos.controls.append(
+                ft.Text("Tabela 'registro de ponto' ainda não criada no Supabase.", color="red", weight="bold")
+            )
+            lbl_status_banco.value = "Aguardando criação da tabela no SQL Editor."
 
         conteudo_admin = ft.Card(
             content=ft.Container(
                 content=ft.Column(
                     controls=[
-                        ft.Text("PAINEL ADMINISTRATIVO", size=22, weight="bold", color="green"),
-                        ft.Text("Histórico de Pontos do Banco:", weight="bold", color="gray"),
-                        ft.Container(content=lista_pontos, height=250, border=ft.border.all(1, "grey-300"), border_radius=10, bgcolor="white"),
-                        ft.Container(height=10),
+                        criar_cabecalho_logos(),
+                        ft.Text("PAINEL ADMINISTRATIVO", size=20, weight="bold", color="green"),
+                        ft.Text(f"Admin: {user['nome_funcionario']}", size=14, color="grey-600"),
+                        ft.Divider(),
+                        ft.Text("Histórico de Registros:", weight="bold", color="blue-grey", size=14),
+                        
+                        # Área visível onde a lista aparece
+                        ft.Container(
+                            content=lista_pontos, 
+                            height=200, 
+                            border=ft.border.all(1, "grey-300"), 
+                            border_radius=10, 
+                            bgcolor="white"
+                        ),
+                        lbl_status_banco,
+                        ft.Divider(),
                         ft.ElevatedButton("Cadastrar Novo Funcionário", on_click=ir_para_cadastro, bgcolor="blue", color="white", width=340, height=45),
-                        ft.TextButton("Desconectar", on_click=ir_para_login)
+                        ft.TextButton("Desconectar / Sair", on_click=ir_para_login)
                     ],
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=12
+                    spacing=10
                 ),
-                padding=30,
+                padding=25,
                 width=420,
             ),
             elevation=4
