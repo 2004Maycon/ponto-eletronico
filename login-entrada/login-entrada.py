@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 # 1. DADOS DE CONEXÃO DO SUPABASE
-SUPABASE_URL = "https://nqoteyejvhqpcusesbjf.supabase.co"
+SUPABASE_URL = "https://nqoteyejvehqpcugsbjf.supabase.co"
 SUPABASE_KEY = "sb_publishable_MnvtygYARIlBxrhjlvI2Ww_EY7Lvlj5"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
