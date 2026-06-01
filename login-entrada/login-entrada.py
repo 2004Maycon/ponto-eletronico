@@ -17,7 +17,7 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT # Força o tema claro para destacar o cartão
     
     # Armazenar o usuário que logou
-    usuario_logado = ft.Ref[dict]()
+    usuario_logado = []
 
     # Caminho das imagens na pasta assets
     logo_bebi = "/maycon.png"
@@ -50,16 +50,24 @@ def main(page: ft.Page):
                 lbl_erro.value = "Preencha todos os campos!"
                 page.update()
                 return
+            
             try:
+                # Consulta o banco de dados buscando pelo E-mail
                 resposta = supabase.table("cadastro de usuário").select("*").eq("E-mail", txt_email.value).execute()
-                if len(resposta.data) == 0:
+                
+                # 1º Passo: Verifica se a lista veio vazia (E-mail não encontrado)
+                if not resposta.data or len(resposta.data) == 0:
                     lbl_erro.value = "E-mail não cadastrado!"
                     page.update()
                     return
                 
+                # 2º Passo: Se achou, pega com segurança o primeiro usuário da lista
                 user = resposta.data[0]
+                
+                # 3º Passo: Valida se a senha bate com a do banco
                 if user["senha"] == txt_senha.value:
-                    usuario_logado.current = user
+                    usuario_logado.clear()
+                    usuario_logado.append(user)
                     if user["is_admin"]:
                         ir_para_admin()
                     else:
@@ -67,6 +75,7 @@ def main(page: ft.Page):
                 else:
                     lbl_erro.value = "Senha incorreta!"
                     page.update()
+                    
             except Exception as ex:
                 lbl_erro.value = f"Erro de conexão: {ex}"
                 page.update()
@@ -144,7 +153,6 @@ def main(page: ft.Page):
                         txt_nome,
                         txt_email,
                         txt_senha,
-                       # Como tem que ficar (CORRETO):
                         ft.Container(content=check_admin, width=340, alignment=ft.Alignment.CENTER_LEFT),
                         ft.Container(height=5),
                         ft.ElevatedButton("Salvar Cadastro", on_click=acao_cadastrar, bgcolor="green", color="white", width=340, height=50),
@@ -166,7 +174,7 @@ def main(page: ft.Page):
     # -------------------------------------------------------------------------
     def ir_para_ponto():
         page.clean()
-        user = usuario_logado.current
+        user = usuario_logado[0]
         
         lbl_relogio = ft.Text(value="", size=38, weight="bold", color="blue", text_align=ft.TextAlign.CENTER)
         lbl_status = ft.Text(value="", weight="bold", size=14)
