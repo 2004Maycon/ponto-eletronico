@@ -144,7 +144,8 @@ def main(page: ft.Page):
                         txt_nome,
                         txt_email,
                         txt_senha,
-                        ft.Container(content=check_admin, width=340, alignment=ft.alignment.center_left),
+                       # Como tem que ficar (CORRETO):
+                        ft.Container(content=check_admin, width=340, alignment=ft.alignment.CENTER_LEFT),
                         ft.Container(height=5),
                         ft.ElevatedButton("Salvar Cadastro", on_click=acao_cadastrar, bgcolor="green", color="white", width=340, height=50),
                         lbl_status,
