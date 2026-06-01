@@ -68,10 +68,14 @@ def main(page: ft.Page):
                 if user["senha"] == txt_senha.value:
                     usuario_logado.clear()
                     usuario_logado.append(user)
+                    
                     if user["is_admin"]:
                         ir_para_admin()
                     else:
                         ir_para_ponto()
+                        
+                    # 🔄 FORÇA O FLET A MOSTRAR A NOVA TELA ATUALIZADA
+                    page.update()
                 else:
                     lbl_erro.value = "Senha incorreta!"
                     page.update()
@@ -104,6 +108,7 @@ def main(page: ft.Page):
             elevation=4
         )
         page.add(conteudo_login)
+        page.update()
 
     # -------------------------------------------------------------------------
     # 📝 TELA DE CADASTRO (CENTRALIZADA EM UM CARD)
@@ -168,6 +173,7 @@ def main(page: ft.Page):
             elevation=4
         )
         page.add(conteudo_cadastro)
+        page.update()
 
     # -------------------------------------------------------------------------
     # ⏱️ TELA DE PONTO - FUNCIONÁRIO (CENTRALIZADA EM UM CARD)
@@ -254,6 +260,7 @@ def main(page: ft.Page):
             elevation=4
         )
         page.add(conteudo_ponto)
+        page.update()
         atualizar_hora()
 
     # -------------------------------------------------------------------------
@@ -293,6 +300,7 @@ def main(page: ft.Page):
             elevation=4
         )
         page.add(conteudo_admin)
+        page.update()
 
     ir_para_login()
 
