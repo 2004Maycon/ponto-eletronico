@@ -1,10 +1,13 @@
 import flet as ft
 from supabase import create_client, Client
-from datetime import datetime
-import threading
 import os
 
-# 1. DADOS DE CONEXÃO DO SUPABASE
+# Importação direta dos arquivos (Sem o ponto antigo)
+from login import carregar_login
+from cadastro import carregar_cadastro
+from admin import carregar_admin
+from funcionario import carregar_funcionario
+
 SUPABASE_URL = "https://nqoteyejvehqpcugsbjf.supabase.co"
 SUPABASE_KEY = "sb_publishable_MnvtygYARIlBxrhjlvI2Ww_EY7Lvlj5"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -17,279 +20,43 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT 
     
     usuario_logado = []
-    logo_bebi = "/maycon.png"
-    logo_cliente = "/distribuidora.png"
 
     def criar_cabecalho_logos():
         return ft.Row(
             controls=[
-                ft.Image(src=logo_bebi, width=90, height=90),
+                ft.Image(src="/maycon.png", width=90, height=90),
                 ft.VerticalDivider(width=2, color="gray", thickness=2),
-                ft.Image(src=logo_cliente, width=90, height=90),
+                ft.Image(src="/distribuidora.png", width=90, height=90),
             ],
-            alignment=ft.MainAxisAlignment.CENTER,
-            height=100
+            alignment=ft.MainAxisAlignment.CENTER, height=100
         )
 
-    # -------------------------------------------------------------------------
-    # 🔓 TELA DE LOGIN
-    # -------------------------------------------------------------------------
+    # Redirecionadores de Rotas protegidos
     def ir_para_login(e=None):
-        page.clean()
-        
-        txt_email = ft.TextField(label="E-mail", width=340, height=55, border_radius=10)
-        txt_senha = ft.TextField(label="Senha", password=True, can_reveal_password=True, width=340, height=55, border_radius=10)
-        lbl_erro = ft.Text(value="", color="red", weight="bold")
-        
-        def acao_login(e):
-            if not txt_email.value or not txt_senha.value:
-                lbl_erro.value = "Preencha todos os campos!"
-                page.update()
-                return
-            
-            try:
-                resposta = supabase.table("cadastro de usuário").select("*").eq("E-mail", txt_email.value).execute()
-                
-                if not resposta.data or len(resposta.data) == 0:
-                    lbl_erro.value = "E-mail não cadastrado!"
-                    page.update()
-                    return
-                
-                user = resposta.data[0]
-                
-                if user["senha"] == txt_senha.value:
-                    usuario_logado.clear()
-                    usuario_logado.append(user)
-                    
-                    if user["is_admin"]:
-                        ir_para_admin()
-                    else:
-                        ir_para_ponto()
-                else:
-                    lbl_erro.value = "Senha incorreta!"
-                    page.update()
-                    
-            except Exception as ex:
-                lbl_erro.value = f"Erro de conexão: {ex}"
-                page.update()
-
-        conteudo_login = ft.Card(
-            content=ft.Container(
-                content=ft.Column(
-                    controls=[
-                        criar_cabecalho_logos(),
-                        ft.Text("Controle de Ponto", size=22, color="blue-grey", weight="bold"),
-                        ft.Container(height=10),
-                        txt_email,
-                        txt_senha,
-                        ft.Container(height=10),
-                        ft.ElevatedButton("Entrar no Sistema", on_click=acao_login, width=340, height=50, bgcolor="blue", color="white"),
-                        lbl_erro,
-                        ft.TextButton("Cadastrar Funcionário", on_click=ir_para_cadastro)
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=15
-                ),
-                padding=30, width=400,
-            ),
-            elevation=4
-        )
-        page.add(conteudo_login)
-        page.update()
-
-    # -------------------------------------------------------------------------
-    # 📝 TELA DE CADASTRO
-    # -------------------------------------------------------------------------
-    def ir_para_cadastro(e):
-        page.clean()
-        
-        txt_nome = ft.TextField(label="Nome Completo", width=340, height=55, border_radius=10)
-        txt_email = ft.TextField(label="E-mail", width=340, height=55, border_radius=10)
-        txt_senha = ft.TextField(label="Senha", password=True, width=340, height=55, border_radius=10)
-        check_admin = ft.Checkbox(label="Acesso de Administrador")
-        lbl_status = ft.Text(value="", weight="bold")
-
-        def acao_cadastrar(e):
-            if not txt_nome.value or not txt_email.value or not txt_senha.value:
-                lbl_status.value = "Preencha todos os campos!"
-                lbl_status.color = "red"
-                page.update()
-                return
-            try:
-                dados = {
-                    "nome_funcionario": txt_nome.value,
-                    "E-mail": txt_email.value,
-                    "senha": txt_senha.value,
-                    "is_admin": check_admin.value
-                }
-                supabase.table("cadastro de usuário").insert(dados).execute()
-                lbl_status.value = "Cadastrado com sucesso!"
-                lbl_status.color = "green"
-                txt_nome.value = ""
-                txt_email.value = ""
-                txt_senha.value = ""
-                check_admin.value = False
-                page.update()
-            except Exception as ex:
-                lbl_status.value = f"Erro ao salvar: {ex}"
-                lbl_status.color = "red"
-                page.update()
-
-        conteudo_cadastro = ft.Card(
-            content=ft.Container(
-                content=ft.Column(
-                    controls=[
-                        criar_cabecalho_logos(),
-                        ft.Text("Cadastrar Funcionário", size=22, weight="bold", color="blue-grey"),
-                        ft.Container(height=5),
-                        txt_nome,
-                        txt_email,
-                        txt_senha,
-                        ft.Container(content=check_admin, width=340, alignment=ft.Alignment.CENTER_LEFT),
-                        ft.Container(height=5),
-                        ft.ElevatedButton("Salvar Cadastro", on_click=acao_cadastrar, bgcolor="green", color="white", width=340, height=50),
-                        lbl_status,
-                        ft.TextButton("Voltar para o Login", on_click=ir_para_login)
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=12
-                ),
-                padding=30, width=400,
-            ),
-            elevation=4
-        )
-        page.add(conteudo_cadastro)
-        page.update()
-
-    # -------------------------------------------------------------------------
-    # ⏱️ TELA DE PONTO - FUNCIONÁRIO
-    # -------------------------------------------------------------------------
-    def ir_para_ponto():
-        page.clean()
-        user = usuario_logado[0] if usuario_logado else {"nome_funcionario": "Funcionário", "id": 0}
-        
-        lbl_relogio = ft.Text(value="", size=32, weight="bold", color="blue", text_align=ft.TextAlign.CENTER)
-        lbl_status = ft.Text(value="", weight="bold", size=14)
-
-        def atualizar_hora():
-            try:
-                lbl_relogio.value = datetime.now().strftime("%H:%M:%S\n%d/%m/%Y")
-                page.update()
-            except:
-                pass
-            threading.Timer(1.0, atualizar_hora).start()
-
-        def bater_entrada(e):
-            try:
-                hora = datetime.now().strftime("%H:%M:%S")
-                dados = {
-                    "funcionario_id": user["id"],
-                    "Dados": f"Entrada em {datetime.now().strftime('%d/%m/%Y')}",
-                    "horario_entrada": hora
-                }
-                supabase.table("registro de ponto").insert(dados).execute()
-                lbl_status.value = f"Entrada registrada às {hora}!"
-                lbl_status.color = "green"
-                page.update()
-            except Exception as ex:
-                lbl_status.value = f"Erro ao registrar: {ex}"
-                lbl_status.color = "red"
-                page.update()
-
-        def bater_saida(e):
-            try:
-                hora = datetime.now().strftime("%H:%M:%S")
-                checagem = supabase.table("registro de ponto").select("*").eq("funcionario_id", user["id"]).is_("horario_saida", "null").execute()
-                
-                if not checagem.data or len(checagem.data) == 0:
-                    lbl_status.value = "Erro: Nenhuma entrada aberta hoje!"
-                    lbl_status.color = "red"
-                    page.update()
-                    return
-                
-                supabase.table("registro de ponto").update({"horario_saida": hora}).eq("id", checagem.data[0]["id"]).execute()
-                lbl_status.value = f"Saída registrada às {hora}!"
-                lbl_status.color = "green"
-                page.update()
-            except Exception as ex:
-                lbl_status.value = f"Erro: {ex}"
-                lbl_status.color = "red"
-                page.update()
-
-        conteudo_ponto = ft.Card(
-            content=ft.Container(
-                content=ft.Column(
-                    controls=[
-                        criar_cabecalho_logos(),
-                        ft.Text(f"Olá, {user['nome_funcionario']}", size=22, weight="bold", color="blue-grey"),
-                        ft.Divider(),
-                        lbl_relogio,
-                        ft.Container(height=10),
-                        ft.ElevatedButton("BATER ENTRADA", on_click=bater_entrada, bgcolor="green", color="white", width=340, height=55),
-                        ft.ElevatedButton("BATER SAÍDA", on_click=bater_saida, bgcolor="red", color="white", width=340, height=55),
-                        lbl_status,
-                        ft.Divider(),
-                        ft.TextButton("Sair / Desconectar", on_click=ir_para_login)
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=12
-                ),
-                padding=25, width=400,
-            ),
-            elevation=4
-        )
-        page.add(conteudo_ponto)
-        page.update()
-        atualizar_hora()
-
-    # -------------------------------------------------------------------------
-    # 👑 TELA ADMIN
-    # -------------------------------------------------------------------------
-    def ir_para_admin():
-        page.clean()
-        user = usuario_logado[0] if usuario_logado else {"nome_funcionario": "Admin"}
-        
-        lista_pontos = ft.ListView(expand=1, spacing=10, padding=10)
-        lbl_status_banco = ft.Text(value="", size=12, color="blue-grey")
-        
         try:
-            pontos = supabase.table("registro de ponto").select("*").execute()
-            if pontos.data and len(pontos.data) > 0:
-                for p in pontos.data:
-                    lista_pontos.controls.append(
-                        ft.Text(f"Func ID: {p['funcionario_id']} | Ent: {p['horario_entrada']} | Sai: {p['horario_saida']}", size=13)
-                    )
-                lbl_status_banco.value = f"{len(pontos.data)} registros carregados."
-            else:
-                lista_pontos.controls.append(ft.Text("Nenhum ponto registrado ainda.", color="orange"))
+            carregar_login(page, criar_cabecalho_logos, ir_para_cadastro, ir_para_admin, ir_para_funcionario, usuario_logado, supabase)
         except Exception as ex:
-            lista_pontos.controls.append(ft.Text(f"Aviso histórico: {ex}", color="red"))
-            lbl_status_banco.value = "Tabela pendente ou erro de conexão."
+            print(f"\n❌ ERRO NA TELA DE LOGIN: {ex}\n")
 
-        conteudo_admin = ft.Card(
-            content=ft.Container(
-                content=ft.Column(
-                    controls=[
-                        criar_cabecalho_logos(),
-                        ft.Text("PAINEL ADMINISTRATIVO", size=20, weight="bold", color="green"),
-                        ft.Text(f"Admin: {user['nome_funcionario']}", size=14, color="grey-600"),
-                        ft.Divider(),
-                        ft.Container(content=lista_pontos, height=180, border=ft.border.all(1, "grey-300"), border_radius=10, bgcolor="white"),
-                        lbl_status_banco,
-                        ft.Divider(),
-                        ft.ElevatedButton("Cadastrar Novo Funcionário", on_click=ir_para_cadastro, bgcolor="blue", color="white", width=340, height=45),
-                        ft.TextButton("Desconectar / Sair", on_click=ir_para_login)
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=10
-                ),
-                padding=25, width=420,
-            ),
-            elevation=4
-        )
-        page.add(conteudo_admin)
-        page.update()
+    def ir_para_cadastro(e=None):
+        try:
+            carregar_cadastro(page, criar_cabecalho_logos, ir_para_login, supabase)
+        except Exception as ex:
+            print(f"\n❌ ERRO NA TELA DE CADASTRO: {ex}\n")
 
+    def ir_para_admin():
+        try:
+            carregar_admin(page, criar_cabecalho_logos, ir_para_cadastro, ir_para_login, usuario_logado, supabase)
+        except Exception as ex:
+            print(f"\n❌ ERRO CRÍTICO NA TELA DE ADMIN: {ex}\n")
+
+    def ir_para_funcionario():
+        try:
+            carregar_funcionario(page, criar_cabecalho_logos, ir_para_login, usuario_logado, supabase)
+        except Exception as ex:
+            print(f"\n❌ ERRO CRÍTICO NA TELA DO FUNCIONÁRIO: {ex}\n")
+
+    # Inicia o fluxo normal pelo Login
     ir_para_login()
 
 if __name__ == "__main__":
