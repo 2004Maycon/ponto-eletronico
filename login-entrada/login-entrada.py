@@ -180,14 +180,12 @@ def main(page: ft.Page):
             try:
                 lbl_relogio.value = datetime.now().strftime("%H:%M:%S\n%d/%m/%Y")
                 page.update()
-                page.run_task(atualizar_hora_task)
             except:
                 pass
-
-        async def atualizar_hora_task():
-            import asyncio
-            await asyncio.sleep(1)
-            atualizar_hora()
+            
+            # Método universal: espera 1 segundo (1000ms) e se auto-executa
+            import threading
+            threading.Timer(1.0, atualizar_hora).start()
 
         def bater_entrada(e):
             try:
